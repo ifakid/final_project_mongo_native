@@ -19,7 +19,7 @@ const getAllMatch = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const result = await Chat.find({ user_id: id })
+    const result = await Connection.find({ from_user: id })
     if (!result){
         res.status(404).json("Not found")
     } else {
@@ -41,9 +41,22 @@ const addConnection = asyncHandler(async (req,res) => {
     if (status == "Like"){
         const check = await Connection.find({ from_user: to_user, to_user: from_user })
         if (check.length > 0 && check[0].status == "Like") {
-            const chat = await Chat.create({
+            /*const chat = await Chat.create({
                 chat_id: uuid.v4(),
                 user_id: [ from_user, to_user ]
+            })*/
+            const match_id = uuid.v4()
+            const chat1 = await Connection.create({
+                match_id,
+                from_user,
+                to_user,
+                status: "Match"
+            })
+            const chat2 = await Connection.create({
+                match_id,
+                to_user,
+                from_user,
+                status: "Match"
             })
         }
     }

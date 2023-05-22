@@ -67,14 +67,12 @@ const getRandom = asyncHandler(async (req,res) => {
 })
 
 const getUser = asyncHandler(async (req,res) => {
-    const { id } = req.params
+    const { id } = req.query
     if (!id) {
         res.status(400)
         throw new Error("Empty field")
     }
-    console.time('user-find-'+id)
     const result = await User.findById(id)
-    console.timeEnd('user-find-'+id)
     if (!result){
         res.status(404).json("Not found")
     } else {

@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 const uuid = require("uuid")
 
 const connectionSchema = new mongoose.Schema({
-    _id:  {
+    match_id:  {
         type: String,
         default: uuid.v4
     },

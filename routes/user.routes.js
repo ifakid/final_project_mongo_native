@@ -6,7 +6,7 @@ const { addUser, editUser, getRandom, getUser, updateLocation,  } = require("../
 router.route("/random").get(getRandom)
 router.route("/").post(addUser)
 router.route("/").patch(editUser)
-router.route("/:id").get(getUser)
+router.route("/").get(getUser)
 router.route("/location").patch(updateLocation)
 
 module.exports = router

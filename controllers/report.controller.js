@@ -18,12 +18,15 @@ const addReport = asyncHandler(async (req,res) => {
 })
 
 const getReport = asyncHandler(async (req,res) => {
-    const { resolved } = req.query
+    var { resolved, page, count } = req.query
     let query = {}
     if (resolved) {
-        query.resolved = resolved
+        query.resolved = Boolean(resolved)
     }
-    const result = await Report.find(query)
+    if (!page) page = 1
+    if (!count) count = 20
+
+    const result = await Report.find(query).skip((page-1)*count).limit(count)
     res.status(200).json({ "reports": result })
 })
 
