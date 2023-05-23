@@ -19,7 +19,7 @@ const getAllMatch = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const result = await Connection.find({ from_user: id })
+    const result = await Connection.find({ from_user: id, status: { $eq: "Match" } })
     if (!result){
         res.status(404).json("Not found")
     } else {
