@@ -15,7 +15,7 @@ const getImages = asyncHandler(async (req,res) => {
     if (!result){
         res.status(404).json("Not found")
     } else {
-        res.status(200).json({"images":result.images})
+        res.status(200).json(result.images)
     }
 })
 
