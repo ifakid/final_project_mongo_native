@@ -1,5 +1,4 @@
 const asyncHandler = require("express-async-handler")
-const Report = require("../models/report.model")
 
 const db = require("../config/mongo.config").getDb()
 

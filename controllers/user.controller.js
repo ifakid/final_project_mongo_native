@@ -1,9 +1,6 @@
 const asyncHandler = require("express-async-handler")
 
-const User = require("../models/user.model")
-const Connection = require("../models/connection.model")
-
-const db = require("../config/mongo.config").getDb()
+const client = require("../config/mongo.config")
 
 /*
  * GET Methods

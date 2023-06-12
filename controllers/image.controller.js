@@ -1,5 +1,4 @@
 const asyncHandler = require("express-async-handler")
-const User = require("../models/user.model")
 
 const client = require("../config/mongo.config")
 
