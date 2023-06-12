@@ -1,13 +1,18 @@
 const asyncHandler = require("express-async-handler")
 const Report = require("../models/report.model")
 
+const db = require("../config/mongo.config").getDb()
+
 const addReport = asyncHandler(async (req,res) => {
     const { reportedBy, reportedItem, reportType, details } = req.body
     if (!(reportType && reportedBy)) {
         res.status(400)
         throw new Error("Field required")
     }
-    const report = await Report.create({
+    const db = await client.connect()
+
+    const reports = await db.collection("reports")
+    const report = await reports.insertOne({
         reportedBy,
         reportedItem,
         reportType,
@@ -26,7 +31,10 @@ const getReport = asyncHandler(async (req,res) => {
     if (!page) page = 1
     if (!count) count = 20
 
-    const result = await Report.find(query).skip((page-1)*count).limit(count)
+    const db = await client.connect()
+
+    const reports = await db.collection("reports")
+    const result = await reports.find(query).skip((page-1)*count).limit(count).toArray()
     res.status(200).json({ "reports": result })
 })
 
@@ -36,7 +44,10 @@ const markAsResolved = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Field required")
     }
-    const result = await Report.findByIdAndUpdate(id, { resolved: true })
+    const db = await client.connect()
+    
+    const reports = await db.collection("reports")
+    const result = await reports.updateOne({ _id: id }, { resolved: true })
     if (!result){
         res.status(404).json("Not found")
     } else {

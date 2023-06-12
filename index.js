@@ -1,9 +1,6 @@
 const express = require("express")
 require('dotenv').config()
 
-const connectDb = require("./config/mongo.config")
-connectDb()
-
 var routes = require("./routes/index.routes")
 var messageRoutes = require("./routes/messages.routes")
 var connectionRoutes = require("./routes/connections.routes")

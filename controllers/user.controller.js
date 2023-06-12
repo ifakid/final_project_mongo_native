@@ -3,6 +3,8 @@ const asyncHandler = require("express-async-handler")
 const User = require("../models/user.model")
 const Connection = require("../models/connection.model")
 
+const db = require("../config/mongo.config").getDb()
+
 /*
  * GET Methods
  */ 
@@ -21,8 +23,10 @@ const getRandom = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
+    const db = await client.connect()
 
-    const result = await Connection.find({ from_user: id })
+    const connection = await db.collection("connections")
+    const result = await connection.find({ from_user: id }).toArray()
     let result1 = []
     result.forEach(r => result1.push(r.to_user))
     result1.push(id)
@@ -62,7 +66,8 @@ const getRandom = asyncHandler(async (req,res) => {
 
     let pipeline = [agg1, agg2, agg3]
    
-    const result2 = await User.aggregate(pipeline)
+    const users = await db.collection("users")
+    const result2 = await users.aggregate(pipeline).toArray()
     res.status(200).json({"users": result2})
 })
 
@@ -72,7 +77,10 @@ const getUser = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const result = await User.findById(id)
+    const db = await client.connect()
+
+    const users = await db.collection("users")
+    const result = await users.find({ _id: id }).toArray()
     if (!result){
         res.status(404).json("Not found")
     } else {
@@ -92,7 +100,10 @@ const addUser = asyncHandler(async (req,res) => {
     }
 
     const coord = [longitude, latitude]
-    const user = await User.create({
+    const db = await client.connect()
+
+    const users = await db.collection("users")
+    const user = await users.insertOne({
         about,
         birthdate,
         discovery,
@@ -122,7 +133,10 @@ const editUser = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const result = await User.findByIdAndUpdate(id, {
+    const db = await client.connect()
+
+    const users = await db.collection("users")
+    const result = await users.updateOne({ _id: id }, {
         about
     })
     if (!result){
@@ -138,7 +152,10 @@ const updateLocation = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const result = await User.findByIdAndUpdate(id, {
+    const db = await client.connect()
+    
+    const users = await db.collection("users")
+    const result = await users.updateOne({ _id: id }, {
         $set: {
             location: {
                 type: "Point",

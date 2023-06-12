@@ -1,11 +1,13 @@
 const asyncHandler = require("express-async-handler")
 const uuid = require("uuid")
 
-const Connection = require("../models/connection.model")
-const Chat = require("../models/chat.model")
+const client = require("../config/mongo.config")
 
 const getAll = asyncHandler(async (req,res) => {
-    const result = await Chat.find({ })
+    const db = await client.connect()
+
+    const connection = await db.collection("connections")
+    const result = await connection.find({ status: { $eq: "Match" } }).toArray()
     if (!result){
         res.status(404).json("Not found")
     } else {
@@ -19,7 +21,10 @@ const getAllMatch = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const result = await Connection.find({ from_user: id, status: { $eq: "Match" } })
+    const db = await client.connect()
+
+    const connection = await db.collection("connections")
+    const result = await connection.find({ from_user: id, status: { $eq: "Match" } }).toArray()
     if (!result){
         res.status(404).json("Not found")
     } else {
@@ -33,26 +38,24 @@ const addConnection = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const connection = await Connection.create({
+    const db = await client.connect()
+
+    const conn = await db.collection("connections")
+    const connection = await conn.insertOne({
         from_user,
         to_user,
         status
     })
     if (status == "Like"){
-        const check = await Connection.find({ from_user: to_user, to_user: from_user })
+        const check = await conn.find({ from_user: to_user, to_user: from_user }).toArray()
         if (check.length > 0 && check[0].status == "Like") {
-            /*const chat = await Chat.create({
-                chat_id: uuid.v4(),
-                user_id: [ from_user, to_user ]
-            })*/
             const match_id = uuid.v4()
-            const chat1 = await Connection.create({
+            const chat1 = await conn.insertMany({
                 match_id,
                 from_user,
                 to_user,
                 status: "Match"
-            })
-            const chat2 = await Connection.create({
+            },{
                 match_id,
                 to_user,
                 from_user,
@@ -65,7 +68,9 @@ const addConnection = asyncHandler(async (req,res) => {
 
 const getSpecificConnection = asyncHandler(async (req,res) => {
     const {from_user, to_user} = req.query
-    const connection = await Connection.find({ from_user, to_user })
+    const db = await client.connect()
+    
+    const connection = await db.collection("connections").find({ from_user, to_user }).toArray()
     res.status(200).json(connection)
 })
 

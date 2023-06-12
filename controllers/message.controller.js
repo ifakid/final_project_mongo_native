@@ -1,8 +1,13 @@
 const asyncHandler = require("express-async-handler")
 const Message = require("../models/message.model")
 
+const client = require("../config/mongo.config")
+
 const getAll = asyncHandler(async (req,res) => {
-    const result = await Message.find()
+    const db = await client.connect()
+
+    const messages = await db.collection("messages")
+    const result = await messages.find({}).toArray()
     if (!result){
         res.status(404).json("Not found")
     } else {
@@ -12,7 +17,10 @@ const getAll = asyncHandler(async (req,res) => {
 
 const getAllFromMatch = asyncHandler(async (req,res) => {
     const { matchid } = req.params
-    const result = await Message.find({ match_id: matchid })
+    const db = await client.connect()
+
+    const messages = await db.collection("messages")
+    const result = await messages.find({ match_id: matchid }).toArray()
     if (!result){
         res.status(404).json("Not found")
     } else {
@@ -26,7 +34,10 @@ const sendMessage = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const message = await Message.create({
+    const db = await client.connect()
+    
+    const messages = await db.collection("messages")
+    const message = await messages.insertOne({
         match_id, 
         attachment_url, 
         message_type, 
