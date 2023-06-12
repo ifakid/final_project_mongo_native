@@ -4,9 +4,11 @@ const uuid = require("uuid")
 const client = require("../config/mongo.config")
 
 const getAll = asyncHandler(async (req,res) => {
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const connection = await db.collection("connections")
+    
     const result = await connection.find({ status: { $eq: "Match" } }).toArray()
     if (!result){
         res.status(404).json("Not found")
@@ -21,7 +23,8 @@ const getAllMatch = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const connection = await db.collection("connections")
     const result = await connection.find({ from_user: id, status: { $eq: "Match" } }).toArray()
@@ -38,10 +41,12 @@ const addConnection = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const db = await client.connect()
+    const conne = await client.connect()
+    const db = conne.db("ta_mongo")
 
     const conn = await db.collection("connections")
     const connection = await conn.insertOne({
+        match_id: uuid.v4(),
         from_user,
         to_user,
         status
@@ -50,7 +55,7 @@ const addConnection = asyncHandler(async (req,res) => {
         const check = await conn.find({ from_user: to_user, to_user: from_user }).toArray()
         if (check.length > 0 && check[0].status == "Like") {
             const match_id = uuid.v4()
-            const chat1 = await conn.insertMany({
+            const chat1 = await conn.insertMany([{
                 match_id,
                 from_user,
                 to_user,
@@ -60,7 +65,7 @@ const addConnection = asyncHandler(async (req,res) => {
                 to_user,
                 from_user,
                 status: "Match"
-            })
+            }])
         }
     }
     res.status(200).json(connection)
@@ -68,7 +73,8 @@ const addConnection = asyncHandler(async (req,res) => {
 
 const getSpecificConnection = asyncHandler(async (req,res) => {
     const {from_user, to_user} = req.query
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
     
     const connection = await db.collection("connections").find({ from_user, to_user }).toArray()
     res.status(200).json(connection)

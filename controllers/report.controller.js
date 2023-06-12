@@ -1,5 +1,7 @@
 const asyncHandler = require("express-async-handler")
 
+const { ObjectId } = require("mongodb")
+
 const client = require("../config/mongo.config")
 
 const addReport = asyncHandler(async (req,res) => {
@@ -8,7 +10,8 @@ const addReport = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Field required")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const reports = await db.collection("reports")
     const report = await reports.insertOne({
@@ -30,7 +33,8 @@ const getReport = asyncHandler(async (req,res) => {
     if (!page) page = 1
     if (!count) count = 20
 
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const reports = await db.collection("reports")
     const result = await reports.find(query).skip((page-1)*count).limit(count).toArray()
@@ -43,10 +47,11 @@ const markAsResolved = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Field required")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
     
     const reports = await db.collection("reports")
-    const result = await reports.updateOne({ _id: id }, { resolved: true })
+    const result = await reports.updateOne({ _id: new ObjectId(id) }, { $set: { resolved: true } })
     if (!result){
         res.status(404).json("Not found")
     } else {

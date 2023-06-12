@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler")
+const uuid = require("uuid")
 
 const client = require("../config/mongo.config")
 
@@ -20,7 +21,8 @@ const getRandom = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const connection = await db.collection("connections")
     const result = await connection.find({ from_user: id }).toArray()
@@ -74,7 +76,8 @@ const getUser = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const users = await db.collection("users")
     const result = await users.find({ _id: id }).toArray()
@@ -97,10 +100,12 @@ const addUser = asyncHandler(async (req,res) => {
     }
 
     const coord = [longitude, latitude]
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const users = await db.collection("users")
     const user = await users.insertOne({
+        _id: uuid.v4(),
         about,
         birthdate,
         discovery,
@@ -130,11 +135,12 @@ const editUser = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const users = await db.collection("users")
     const result = await users.updateOne({ _id: id }, {
-        about
+        $set: { about }
     })
     if (!result){
         res.status(404).json("Not found")
@@ -149,7 +155,8 @@ const updateLocation = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
     
     const users = await db.collection("users")
     const result = await users.updateOne({ _id: id }, {

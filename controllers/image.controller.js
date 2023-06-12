@@ -1,5 +1,7 @@
 const asyncHandler = require("express-async-handler")
 
+const {ObjectId} = require("mongodb")
+
 const client = require("../config/mongo.config")
 
 /*
@@ -12,10 +14,11 @@ const getImages = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const users = await db.collection("users")
-    const result = await users.find({ _id: id }).toArray()
+    const result = await users.findOne({ _id: id })
     if (!result){
         res.status(404).json("Not found")
     } else {
@@ -33,15 +36,16 @@ const deleteImage = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const users = await db.collection("users")
-    const result1 = await users.find({ _id: userId })
+    const result1 = await users.findOne({ _id: userId })
     if (result1.images.length == 1) {
         res.status(400).json("No images left")
     } else {
         const result2 = await users.updateOne({ _id: userId }, {
-            $pull: { images: { _id:imageId } }
+            $pull: { images: { _id: new ObjectId(imageId) } }
         })
         res.status(200).json(result2)
     }
@@ -57,15 +61,19 @@ const addImage = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
     
     const users = await db.collection("users")
-    const result1 = await users.find({ _id: userId })
+    const result1 = await users.findOne({ _id: userId })
     if (result1.images.length == 9) {
         res.status(400).json("Too many images!")
     } else {
         const result2 = await users.updateOne({ _id: userId }, {
-            $push: { images: { url: imageUrl }}
+            $push: { images: { 
+                _id: new ObjectId(),
+                url: imageUrl 
+            }}
         })
         res.status(200).json(result2)
     }

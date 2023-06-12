@@ -3,7 +3,8 @@ const asyncHandler = require("express-async-handler")
 const client = require("../config/mongo.config")
 
 const getAll = asyncHandler(async (req,res) => {
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const messages = await db.collection("messages")
     const result = await messages.find({}).toArray()
@@ -16,7 +17,8 @@ const getAll = asyncHandler(async (req,res) => {
 
 const getAllFromMatch = asyncHandler(async (req,res) => {
     const { matchid } = req.params
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
 
     const messages = await db.collection("messages")
     const result = await messages.find({ match_id: matchid }).toArray()
@@ -33,7 +35,8 @@ const sendMessage = asyncHandler(async (req,res) => {
         res.status(400)
         throw new Error("Empty field")
     }
-    const db = await client.connect()
+    const conn = await client.connect()
+    const db = conn.db("ta_mongo")
     
     const messages = await db.collection("messages")
     const message = await messages.insertOne({
