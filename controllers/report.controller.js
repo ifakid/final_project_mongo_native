@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler")
 
-const db = require("../config/mongo.config").getDb()
+const client = require("../config/mongo.config")
 
 const addReport = asyncHandler(async (req,res) => {
     const { reportedBy, reportedItem, reportType, details } = req.body
